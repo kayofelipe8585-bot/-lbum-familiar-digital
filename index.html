@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self' blob:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c2603a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Álbum">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<title>Álbum da Família</title>
+<style>
+:root{--bg:#fbf6ef;--card:#fff;--tx:#3b2f2a;--mut:#8a7a70;--ac:#c2603a;--bd:#e6dccf;--sh:rgba(0,0,0,.12);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1815;--card:#2a231f;--tx:#f1e8df;--mut:#a89888;--ac:#e08a62;--bd:#43382f;--sh:rgba(0,0,0,.5)}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font-family:Georgia,'Times New Roman',serif;line-height:1.5;max-width:900px;margin:0 auto;padding:18px 14px 60px}
+h1{font-size:1.9rem;text-align:center;margin:8px 0 2px}h2{font-size:1.25rem;margin:22px 0 8px;text-align:center}
+.sub{text-align:center;color:var(--mut);margin:0 0 18px}
+button,.btn{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:12px;padding:10px 14px;display:inline-block}
+.pri{background:var(--ac);color:#fff;border:0;width:100%;font-size:1.1rem;padding:14px;margin-top:10px;display:block;text-align:center}
+textarea,input[type=text],input[type=password]{font:inherit;width:100%;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:10px}
+textarea{min-height:60vh;resize:vertical}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tile{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--card);border:1px solid var(--bd)}
+.tile img{width:100%;height:100%;object-fit:cover;display:block}
+.tile.add{display:flex;align-items:center;justify-content:center;font-size:2.2rem;color:var(--ac);border:2px dashed var(--ac);background:transparent;cursor:pointer}
+.au{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;font-size:1.6rem;padding:4px;text-align:center}
+.au small{font-size:.6rem;color:var(--mut);overflow:hidden;max-width:100%;white-space:nowrap;text-overflow:ellipsis}
+.tile .info,.tile .dl{position:absolute;bottom:4px;width:28px;height:28px;padding:0;border-radius:50%;font-size:.85rem;background:rgba(255,255,255,.92);color:#222;border:0;box-shadow:0 1px 4px var(--sh)}
+.info{right:4px}.dl{left:4px}
+.tile .rm{position:absolute;top:4px;right:4px;min-width:26px;height:26px;padding:0 6px;border-radius:13px;font-size:.75rem;background:rgba(0,0,0,.6);color:#fff;border:0}
+.tile .rm.red{background:#c0392b}
+.back{margin-bottom:6px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:9}
+.ov.on{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:560px;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.row{margin-bottom:10px}.line{display:flex;gap:6px}.line button{white-space:nowrap}
+.row textarea{display:none;margin-top:6px;min-height:90px}.row.open textarea{display:block}
+.opt{display:block;width:100%;text-align:left;margin-bottom:8px;padding:14px;position:relative;overflow:hidden}
+.ovi{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.note{color:var(--mut);font-size:.85rem;text-align:center}
+.view{display:none}.view.on{display:block}
+.crest{margin:22px auto 0;width:200px;max-width:60%;text-align:center}
+.crest .box{position:relative;aspect-ratio:1;border:2px dashed var(--ac);border-radius:16px;display:flex;align-items:center;justify-content:center;color:var(--ac);font-size:.95rem;overflow:hidden;cursor:pointer;padding:8px}
+.crest .box img{width:100%;height:100%;object-fit:contain}
+.crest button{margin-top:6px;font-size:.8rem;padding:4px 10px}
+.ro .rm,.ro .tile.add,.ro #crestDel,.ro #crestAdj,.ro .addp{display:none!important}
+#gT1.on,#gT2.on{background:var(--ac);color:#fff}
+#cv{width:100%;max-width:300px;aspect-ratio:1;display:block;margin:0 auto 10px;border:1px dashed var(--ac);border-radius:12px;touch-action:none;background:repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/16px 16px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:20px;font-size:.9rem;display:none;z-index:99;max-width:90%;text-align:center}
+</style>
+</head>
+<body>
+
+<div id="gate" class="view on">
+  <h1>🔐 Álbum da Família</h1>
+  <p class="sub">Entre com a senha do seu álbum ou crie um novo.</p>
+  <p class="note" id="gmode" style="margin:-10px 0 10px"></p>
+  <div class="line" style="margin:10px 0"><button type="button" id="gT1" onclick="gtab('in')" style="flex:1">Entrar</button><button type="button" id="gT2" onclick="gtab('new')" style="flex:1">Criar álbum</button></div>
+  <input type="text" id="gName" placeholder="Nome do álbum (ex.: Silva)" style="display:none;margin-bottom:8px">
+  <input type="password" id="gPw" placeholder="Senha de acesso" autocomplete="off">
+  <p class="note" id="gErr" style="color:#c0392b"></p>
+  <label class="note" style="display:block;margin:6px 0"><input type="checkbox" id="gRem"> Manter conectado neste aparelho (só no seu celular)</label>
+  <button type="button" class="pri" id="gBtn" onclick="doGate()">Entrar no álbum</button>
+  <p class="note" style="margin-top:16px">Cada senha abre um álbum. Quem entrar com a senha pode ver e editar o álbum.</p>
+</div>
+
+<div id="home" class="view">
+  <h1 id="tit">Álbum da Família</h1>
+  <p class="sub">Guardando nossas memórias ♥</p>
+  <p class="note" id="mode" style="margin:-10px 0 10px">📱 Só neste aparelho</p>
+  <input type="text" id="sobrenome" placeholder="✍️ Crie o sobrenome da família (ex.: Silva)" style="text-align:center;margin-bottom:4px">
+  <button class="pri" onclick="go('album')">📖 Abrir Álbum da família</button>
+  <button class="pri" onclick="go('audios')">🎧 Áudios da família</button>
+  <button class="pri" onclick="go('historia')">📜 História da família</button>
+  <button type="button" onclick="sair()" style="margin-top:8px;width:100%">🔒 Trocar ou sair do álbum</button>
+  <div class="crest">
+    <h2 style="margin-top:0">Brasão da família</h2>
+    <div class="box" id="crestBox"></div>
+    <button id="crestAdj" onclick="adjCrest()" style="display:none;margin-right:4px">Ajustar</button><button id="crestDel" onclick="delCrest()" style="display:none">Remover brasão</button>
+  </div>
+  <p class="note" style="margin-top:22px">Quem entrar com a senha deste álbum pode ver e editar. As fotos ficam salvas neste aparelho.</p>
+</div>
+
+<div id="album" class="view">
+  <button class="back" onclick="go('home')">← Voltar</button>
+  <h1>Álbum da família</h1>
+  <div class="grid" id="photoGrid"></div>
+</div>
+
+<div id="audios" class="view">
+  <button class="back" onclick="go('home')">← Voltar</button>
+  <h1>Áudios da família</h1>
+  <p class="note">Toque no quadrado para ouvir. Use + para adicionar áudios.</p>
+  <div class="grid" id="audGrid"></div>
+</div>
+
+<div id="historia" class="view">
+  <button class="back" onclick="go('home')">← Voltar</button>
+  <h1>História da família</h1>
+  <textarea id="story" placeholder="Escreva aqui a história da nossa família…"></textarea>
+</div>
+
+<div class="ov" id="addOv" onclick="if(event.target===this)closeAll()">
+  <div class="sheet">
+    <div class="top"><b>Adicionar fotos</b><button onclick="closeAll()">✕</button></div>
+    <div id="addOpts"></div>
+    <p class="note">Você pode escolher várias fotos de uma vez. No celular, a janela que abre lista Galeria, Google Fotos e Arquivos. No computador, <a href="https://photos.google.com" target="_blank" rel="noopener">abra o Google Fotos</a>, baixe as fotos e selecione aqui.</p>
+  </div>
+</div>
+
+<div class="ov" id="crestOv" onclick="if(event.target===this)closeAll()">
+  <div class="sheet">
+    <div class="top"><b>Brasão da família</b><button onclick="closeAll()">✕</button></div>
+    <div id="crestOpts"></div>
+  </div>
+</div>
+
+<div class="ov" id="infoOv" onclick="if(event.target===this)closeAll()">
+  <div class="sheet">
+    <div class="top"><b id="infoT">Quem está na foto?</b><button onclick="closeAll()">✕</button></div>
+    <div id="people"></div>
+    <button type="button" class="addp" onclick="addPerson()" style="width:100%">＋ Adicionar pessoa</button>
+  </div>
+</div>
+<div class="ov" id="cropOv"><div class="sheet">
+<div class="top"><b>Ajustar brasão</b><button type="button" onclick="closeAll()">✕</button></div>
+<canvas id="cv" width="600" height="600"></canvas>
+<p class="note">Arraste para mover. Use o controle para aproximar ou afastar.</p>
+<input type="range" id="zoom" min="1" max="4" step="0.01" value="1" style="width:100%">
+<div class="line" style="margin:10px 0"><button type="button" onclick="setFit('cover')" style="flex:1">Preencher</button><button type="button" onclick="setFit('contain')" style="flex:1">Mostrar inteira</button></div>
+<button type="button" class="pri" onclick="saveCrop()">Salvar brasão</button>
+</div></div>
+<div id="toast"></div>
+
+<script>
+const C=window.claude&&window.claude.use?window.claude:null;
+let db,items=[],cur=null,cloud=null,pt,mt,canW=true,K='',P='',unsubs=[],allLocal=[],who='';
+const $=id=>document.getElementById(id);
+const IMG='image/*,.heic,.heif,.webp,.jpg,.jpeg,.png',AUD='audio/*,.m4a,.mp3,.wav,.aac,.ogg,.opus,.amr,.3gp,.caf';
+const MIME={heic:'image/heic',heif:'image/heif',m4a:'audio/mp4',mp3:'audio/mpeg',wav:'audio/wav',aac:'audio/aac',ogg:'audio/ogg',opus:'audio/ogg',amr:'audio/amr','3gp':'audio/3gpp',caf:'audio/x-caf',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp'};
+function msg(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(msg.t);msg.t=setTimeout(()=>e.style.display='none',4000)}
+async function cw(fn){try{await fn()}catch(e){console.error(e);msg('Não foi possível salvar. Você precisa de permissão de Colaborador ou Editor.')}}
+// ---------- modo local (só neste aparelho)
+function openDB(){return new Promise(r=>{try{const q=indexedDB.open('album-familia',1);q.onupgradeneeded=()=>q.result.createObjectStore('items',{keyPath:'id'});q.onsuccess=()=>{db=q.result;const g=db.transaction('items').objectStore('items').getAll();g.onsuccess=()=>{allLocal=g.result;r()};g.onerror=()=>r()};q.onerror=()=>r()}catch(e){r()}})}
+function save(it){it.album=K;if(!allLocal.includes(it))allLocal.push(it);try{db&&db.transaction('items','readwrite').objectStore('items').put(it)}catch(e){}}
+function remove(id){allLocal=allLocal.filter(x=>x.id!==id);try{db&&db.transaction('items','readwrite').objectStore('items').delete(id)}catch(e){}}
+function go(v){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id===v));scrollTo(0,0)}
+function closeAll(){document.querySelectorAll('.ov').forEach(o=>o.classList.remove('on'))}
+const url=it=>it.url||(it.url=URL.createObjectURL(it.blob));
+// ---------- seletores
+function fileInput(type,accept,multiple,cam){
+  const i=document.createElement('input');i.type='file';i.className='ovi';i.accept=accept;i.onclick=()=>{window._pk=Date.now()};
+  if(multiple)i.multiple=true;if(cam)i.setAttribute('capture','environment');
+  i.oninput=i.onchange=async()=>{const fs=[...i.files];if(!fs.length||i._busy)return;i._busy=1;window._pk=0;closeAll();
+    if(type==='crest')openCrop(URL.createObjectURL(fs[0]),fs[0].name);else await ingest(fs,type);setTimeout(()=>{try{i.value=''}catch(e){}i._busy=0},300)};
+  return i;
+}
+function opt(label,type,accept,multiple,cam){const d=document.createElement('div');d.className='btn opt';d.textContent=label;d.appendChild(fileInput(type,accept,multiple,cam));return d}
+$('addOpts').append(opt('🖼️ Da galeria','img',IMG,1),opt('☁️ Do Google Fotos','img',IMG,1),opt('📁 De arquivos','img',IMG,1));
+$('crestOpts').append(opt('📷 Tirar uma foto','crest','image/*',0,1),opt('🖼️ Escolher da galeria / Google Fotos','crest',IMG,0),opt('📁 De arquivos','crest',IMG,0));
+// ---------- adicionar
+function shrink(f,mime,max){return new Promise(res=>{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{const s=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);c.toBlob(b=>{URL.revokeObjectURL(u);res(b||f)},mime,.85)};im.onerror=()=>{URL.revokeObjectURL(u);res(f)};im.src=u})}
+const ext=f=>(f.name.split('.').pop()||'').toLowerCase();
+async function ingest(files,type){
+  const ok=[];let bad=0;
+  for(const f of files){const e=ext(f),t=(f.type||MIME[e]||'').toLowerCase();
+    const good=type==='aud'?(t.startsWith('audio/')||['m4a','mp3','wav','aac','ogg','opus','amr','3gp','caf'].includes(e)):((t.startsWith('image/')&&!t.includes('svg')&&e!=='svg')||['heic','heif','jpg','jpeg','png','webp'].includes(e));
+    if(good&&f.size<=20*1048576)ok.push(f);else bad++}
+  if(bad)msg(bad+' arquivo(s) ignorado(s): só fotos ou áudios de até 20 MB.');
+  if(!ok.length)return;
+  return cloud?ingestCloud(ok,type):ingestLocal(ok,type);
+}
+async function ingestCloud(files,type){
+  if(!cloud.assets){msg('Seu acesso é só de visualização. Peça permissão de Colaborador ao dono.');return}
+  let ok=0;msg('Enviando…');
+  for(const f of files){try{
+    let b=f;if(!f.type&&MIME[ext(f)])b=f.slice(0,f.size,MIME[ext(f)]);
+    if(type!=='aud')b=await shrink(b,type==='crest'?'image/png':'image/jpeg',type==='crest'?1000:1800);
+    const up=await cloud.assets.upload(b);
+    const old=type==='crest'?items.find(i=>i.type==='crest'):null;
+    const id=type==='crest'?'crest':Date.now()+'-'+ok+Math.random().toString(36).slice(2,5);
+    await cloud.db.doc(P+'items/'+id).set({type,name:f.name||'arquivo',t:Date.now()+ok,aid:up.id,url:up.url,people:[]});
+    if(old&&old.aid)cloud.assets.delete(old.aid).catch(()=>{});
+    ok++;
+  }catch(e){console.error(e)}}
+  msg(ok?ok+' adicionado(s) ✔ (todos já podem ver)':'Não consegui enviar. Verifique sua permissão ou o tamanho do arquivo (máx. 20 MB).');
+}
+async function ingestLocal(files,type){
+  let ok=0;msg('Carregando…');
+  for(const f of files){try{
+    if(type==='crest')delCrest(true);
+    const it={id:Date.now()+'-'+ok+Math.random().toString(36).slice(2,6),type,blob:f,name:f.name||'arquivo',t:Date.now()+ok,people:[]};
+    if(!f.type&&MIME[ext(f)])it.blob=f.slice(0,f.size,MIME[ext(f)]);
+    try{const b=await f.arrayBuffer();it.blob=new Blob([b],{type:it.blob.type||f.type||''})}catch(e){}
+    items.push(it);ok++;save(it);
+  }catch(e){}}
+  render();msg(ok?ok+' adicionado(s) ✔':'Não consegui carregar o arquivo. Tente abrir o link no Chrome/Safari.');
+}
+// ---------- mostrar
+function render(){
+  for(const [type,el] of [['img',$('photoGrid')],['aud',$('audGrid')]]){
+    el.innerHTML='';
+    items.filter(i=>i.type===type).forEach(it=>{
+      const t=document.createElement('div');t.className='tile';
+      if(type==='img'){const im=new Image();im.src=url(it);im.alt=it.name||'';
+        im.onerror=()=>{im.remove();t.insertAdjacentHTML('afterbegin','<div class="au">🖼️<small></small></div>');t.querySelector('small').textContent=it.name||'foto'};t.appendChild(im)}
+      else{t.innerHTML='<div class="au">🎵<small></small></div>';t.querySelector('small').textContent=it.name||'Áudio';
+        const a=document.createElement('audio');a.src=url(it);a.onended=()=>{t.querySelector('.au').firstChild.nodeValue='🎵'};
+        t.onclick=e=>{if(e.target.closest('button'))return;const n=t.querySelector('.au').firstChild;
+          document.querySelectorAll('audio').forEach(x=>{if(x!==a)x.pause()});
+          if(a.paused){a.play().catch(()=>msg('Formato de áudio não suportado'));n.nodeValue='⏸️'}else{a.pause();n.nodeValue='🎵'}};t.appendChild(a)}
+      t.insertAdjacentHTML('beforeend','<button class="dl" title="Baixar">⬇</button><button class="info" title="Pessoas">👤</button><button class="rm" title="Remover">✕</button>');
+      const rb=t.querySelector('.rm');rb.onclick=e=>{e.stopPropagation();if(rb.dataset.c){delItem(it)}else{rb.dataset.c=1;rb.classList.add('red');rb.textContent='Remover?';setTimeout(()=>{rb.dataset.c='';rb.classList.remove('red');rb.textContent='✕'},3000)}};
+      t.querySelector('.info').onclick=()=>openInfo(it);
+      t.querySelector('.dl').onclick=()=>download(it);
+      el.appendChild(t);
+    });
+    const p=document.createElement('div');p.className='tile add';p.textContent='+';
+    if(type==='img')p.onclick=()=>$('addOv').classList.add('on');
+    else p.appendChild(fileInput('aud',AUD,1));
+    el.appendChild(p);
+  }
+  const c=items.find(i=>i.type==='crest'),box=$('crestBox');
+  box.textContent='';if(c){const ci=new Image();ci.alt='Brasão da família';ci.src=url(c);box.appendChild(ci)}else box.textContent='＋ Adicionar brasão por foto';
+  box.onclick=()=>{if(canW)$('crestOv').classList.add('on')};
+  $('crestDel').style.display=$('crestAdj').style.display=c?'inline-block':'none';
+}
+async function download(it){
+  try{const d=C&&await C.use('downloads');
+    if(d){const b=it.blob||await (await fetch(it.url)).blob();await d.save({filename:it.name||'arquivo',data:b});return}}catch(e){}
+  const a=document.createElement('a');a.href=url(it);a.download=it.name||'arquivo';document.body.appendChild(a);a.click();a.remove();
+}
+function delItem(it){
+  if(cloud){cw(async()=>{await cloud.db.doc(P+'items/'+it.id).delete();if(it.aid&&cloud.assets)cloud.assets.delete(it.aid).catch(()=>{})});return}
+  remove(it.id);items=items.filter(x=>x!==it);render();msg('Removido');
+}
+function delCrest(quiet){const c=items.find(i=>i.type==='crest');if(!c)return;if(cloud){delItem(c);return}remove(c.id);items=items.filter(i=>i!==c);if(!quiet)render()}
+// ---------- ajuste do brasão
+const cr={img:null,min:1,s:1,x:0,y:0,name:'brasao'};
+function openCrop(src,name){const im=new Image();im.onload=()=>{cr.img=im;cr.name=name||'brasao';$('cropOv').classList.add('on');setFit('cover')};im.onerror=()=>msg('Não consegui abrir essa imagem. Tente JPG ou PNG.');im.src=src}
+function setFit(m){const S=600,w=cr.img.width,h=cr.img.height;cr.min=m==='cover'?Math.max(S/w,S/h):Math.min(S/w,S/h);cr.s=cr.min;cr.x=cr.y=0;$('zoom').value=1;drawCrop()}
+function drawCrop(){const S=600,g=$('cv').getContext('2d'),w=cr.img.width*cr.s,h=cr.img.height*cr.s;g.clearRect(0,0,S,S);g.drawImage(cr.img,S/2-w/2+cr.x,S/2-h/2+cr.y,w,h)}
+$('zoom').oninput=e=>{cr.s=cr.min*e.target.value;drawCrop()};
+(()=>{const c=$('cv');let d=null;c.onpointerdown=e=>{d={x:e.clientX,y:e.clientY};c.setPointerCapture(e.pointerId)};c.onpointermove=e=>{if(!d)return;const k=600/c.getBoundingClientRect().width;cr.x+=(e.clientX-d.x)*k;cr.y+=(e.clientY-d.y)*k;d={x:e.clientX,y:e.clientY};drawCrop()};c.onpointerup=c.onpointercancel=()=>{d=null}})();
+function saveCrop(){$('cv').toBlob(b=>{closeAll();ingest([new File([b],cr.name.replace(/\.\w+$/,'')+'.png',{type:'image/png'})],'crest')},'image/png')}
+function adjCrest(){const c=items.find(i=>i.type==='crest');if(c)openCrop(url(c),c.name)}
+function loginHint(){$('mode').textContent=$('gmode').textContent='📱 Modo app · salvo neste aparelho'}
+// ---------- pessoas
+function persist(it){
+  if(!cloud){save(it);return}
+  clearTimeout(pt);pt=setTimeout(()=>cw(()=>cloud.db.doc(P+'items/'+it.id).update({people:it.people.map(p=>({name:p.name||'',story:p.story||''}))})),600);
+}
+function openInfo(it){
+  cur=it;if(!Array.isArray(it.people))it.people=[];if(!it.people.length)it.people.push({name:'',story:''});
+  $('infoT').textContent=it.type==='img'?'Quem está na foto?':'Quem está no áudio?';
+  drawPeople();$('infoOv').classList.add('on');
+}
+function drawPeople(){
+  const box=$('people');box.innerHTML='';
+  cur.people.forEach(p=>{
+    const r=document.createElement('div');r.className='row'+(p.open||p.story?' open':'');
+    r.innerHTML='<div class="line"><input type="text" placeholder="Nome da pessoa"><button type="button">✍️ História</button></div><textarea placeholder="Escreva a história desta pessoa…"></textarea>';
+    const inp=r.querySelector('input'),ta=r.querySelector('textarea'),b=r.querySelector('button');
+    inp.value=p.name||'';ta.value=p.story||'';inp.readOnly=ta.readOnly=!canW;
+    inp.oninput=()=>{p.name=inp.value;persist(cur)};
+    ta.oninput=()=>{p.story=ta.value;persist(cur)};
+    b.onclick=()=>{r.classList.toggle('open');p.open=r.classList.contains('open');if(p.open)ta.focus()};
+    box.appendChild(r);
+  });
+}
+function addPerson(){cur.people.push({name:'',story:''});persist(cur);drawPeople()}
+// ---------- sobrenome e história
+const st=$('story'),sn=$('sobrenome');
+ 
+function tit(){const v=sn.value.trim();$('tit').textContent=v?'Família '+v:'Álbum da Família';document.title=$('tit').textContent}
+function metaSave(){
+  if(!cloud){try{localStorage.setItem(K+'_h',st.value);localStorage.setItem(K+'_s',sn.value)}catch(e){}return}
+  clearTimeout(mt);mt=setTimeout(()=>cw(()=>cloud.db.doc(P+'meta/family').set({name:sn.value,story:st.value})),700);
+}
+sn.oninput=()=>{tit();metaSave()};st.oninput=metaSave;tit();
+// ---------- álbum compartilhado (nuvem)
+// ---------- senha de acesso (cada senha = um álbum)
+async function hk(pw){const s='album-familia|'+pw.trim();try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('').slice(0,40)}catch(e){let h=5381;for(const c of s)h=(h*33^c.charCodeAt(0))>>>0;return 'x'+h.toString(16)}}
+async function connect(){
+  if(!C){loginHint();return}
+  try{
+    const [d,a]=await Promise.all([C.use('db'),C.use('assets')]);
+    if(!d){loginHint();return}
+    cloud={db:d,assets:a};
+    try{const u=await C.use('user');const m=await u.me();who=m.name||m.email||'';canW=(await u.can('data.write'))!==false}catch(e){}
+    document.body.classList.toggle('ro',!canW);
+    $('mode').textContent=$('gmode').textContent='☁️ Álbum online'+(who?' · '+who:'')+(canW?'':' · somente visualização');
+  }catch(e){console.error(e)}
+}
+async function getName(key){if(cloud){const s=await cloud.db.doc('albums/'+key).get();return s.exists?(s.data().name||'Família'):null}return localStorage.getItem('alb:'+key)}
+async function mkAlbum(key,nm){if(cloud)await cloud.db.doc('albums/'+key).set({name:nm,t:Date.now()});else localStorage.setItem('alb:'+key,nm)}
+let gm='in';
+function gtab(m){gm=m;$('gName').style.display=m==='new'?'block':'none';$('gBtn').textContent=m==='new'?'Criar álbum':'Entrar no álbum';$('gT1').className=m==='in'?'on':'';$('gT2').className=m==='new'?'on':'';$('gErr').textContent=''}
+const lockUntil=()=>{try{return +localStorage.getItem('lk')||0}catch(e){return 0}};
+let fails=0;function fail(){fails++;if(fails>=5){try{localStorage.setItem('lk',Date.now()+Math.min(30*2**(fails-5),900)*1000)}catch(e){}}}
+async function doGate(){
+  const pw=$('gPw').value,er=$('gErr');er.textContent='';
+  if(Date.now()<lockUntil()){er.textContent='Muitas tentativas. Aguarde '+Math.ceil((lockUntil()-Date.now())/1000)+'s.';return}
+  if(pw.trim().length<(gm==='new'?6:4)){er.textContent=gm==='new'?'Para criar, use pelo menos 6 caracteres.':'Digite a senha.';return}
+  const key=await hk(pw);
+  try{
+    if(gm==='new'){
+      if(await getName(key)!==null){er.textContent='Essa senha já está em uso por outro álbum. Escolha outra.';return}
+      const nm=$('gName').value.trim()||'Família';
+      try{await mkAlbum(key,nm)}catch(e){er.textContent='Você não tem permissão para criar álbuns. Peça acesso de Colaborador.';return}
+      start(key,nm);
+    }else{
+      const nm=await getName(key);
+      if(nm===null){fail();er.textContent='Senha incorreta ou álbum não encontrado.';return}
+      start(key,nm);
+    }
+  }catch(e){er.textContent='Não foi possível acessar. Verifique sua conexão e permissão.'}
+}
+function start(key,nm,keep){
+  fails=0;
+  K=key;P='albums/'+key+'/';$('gPw').value='';items=[];
+  try{if(keep||$('gRem').checked)localStorage.setItem('lastAlbum',JSON.stringify({k:key,n:nm}));else localStorage.removeItem('lastAlbum')}catch(e){}
+  if(cloud){
+    unsubs.push(cloud.db.collection(P+'items').onSnapshot(s=>{items=s.docs.map(x=>{const d=x.data();return {...d,id:x.id,people:(d.people||[]).map(p=>({name:p.name||'',story:p.story||''}))}}).filter(i=>typeof i.url==='string'&&/^\/_blob\/[0-9a-f]{32}$/.test(i.url)).sort((p,q)=>(p.t||0)-(q.t||0));render()},()=>msg('Sem acesso a este álbum.')));
+    unsubs.push(cloud.db.doc(P+'meta/family').onSnapshot(s=>{const m=s.data();if(document.activeElement!==sn)sn.value=m&&m.name!==undefined?m.name:(nm==='Família'?'':nm);if(document.activeElement!==st)st.value=(m&&m.story)||'';tit()},()=>{}));
+  }else{
+    items=allLocal.filter(i=>i.album===K).sort((a,b)=>a.t-b.t);
+    try{st.value=localStorage.getItem(K+'_h')||'';sn.value=localStorage.getItem(K+'_s')||(nm==='Família'?'':nm)}catch(e){}
+  }
+  tit();render();go('home');
+}
+function sair(){items.forEach(i=>{if(i.url&&i.url.startsWith('blob:'))try{URL.revokeObjectURL(i.url)}catch(e){}});unsubs.forEach(u=>{try{u()}catch(e){}});unsubs=[];K='';P='';items=[];sn.value=st.value='';tit();try{localStorage.removeItem('lastAlbum')}catch(e){}render();gtab('in');go('gate')}
+async function boot(){
+  await connect();let l=null;
+  try{l=JSON.parse(localStorage.getItem('lastAlbum')||'null')}catch(e){}
+  if(l){try{const n=await getName(l.k);if(n!==null){start(l.k,n,true);return}}catch(e){}}
+  gtab('in');go('gate');
+}
+async function initCloudOld(){
+  if(!C){loginHint();return}
+  try{
+    const [d,a]=await Promise.all([C.use('db'),C.use('assets')]);
+    if(!d){loginHint();return}
+    cloud={db:d,assets:a};items=[];render();
+    let who='';try{const u=await C.use('user');const m=await u.me();who=m.name||m.email||'';canW=(await u.can('data.write'))!==false}catch(e){}
+    document.body.classList.toggle('ro',!canW);sn.readOnly=st.readOnly=!canW;
+    $('mode').textContent='☁️ Álbum compartilhado'+(who?' · '+who:'')+(canW?' · pode editar':' · somente visualização');
+    d.collection('items').onSnapshot(s=>{items=s.docs.map(x=>{const d=x.data();return {...d,id:x.id,people:(d.people||[]).map(p=>({name:p.name||'',story:p.story||''}))}}).sort((p,q)=>(p.t||0)-(q.t||0));render()},()=>msg('Sem acesso ao álbum compartilhado.'));
+    d.doc('meta/family').onSnapshot(s=>{const m=s.data()||{};if(document.activeElement!==sn)sn.value=m.name||'';if(document.activeElement!==st)st.value=m.story||'';tit()},()=>{});
+  }catch(e){console.error(e)}
+}
+window.addEventListener('focus',()=>{const k=window._pk;if(!k)return;setTimeout(()=>{if(window._pk===k){window._pk=0;msg('A galeria fechou, mas o celular não enviou a foto ao site. Abra o link no Chrome ou Safari.')}},2000)});
+let idle;function bump(){clearTimeout(idle);idle=setTimeout(()=>{if(K){sair();msg('Álbum bloqueado por inatividade.')}},600000)}
+['click','touchstart','keydown'].forEach(e=>addEventListener(e,bump,{passive:true}));bump();
+render();openDB().then(boot);gtab('in');
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
